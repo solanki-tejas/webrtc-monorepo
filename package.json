@@ -1,0 +1,15 @@
+{
+  "name": "WebRTC-Monorepo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "vue:dev": "pnpm -F client run dev",
+    "vue:build": "pnpm -F client run build",
+    "node:start": "pnpm -F server run dev",
+    "node:test": "pnpm -F server run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
