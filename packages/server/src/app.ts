@@ -4,6 +4,8 @@ import path from "path";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import http from "http";
+import cors from "cors";
+import { setupSocketIO } from "./utils/socket";
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 import { handleError } from "./helpers/error";
@@ -11,6 +13,9 @@ import httpLogger from "./middlewares/httpLogger";
 import router from "./routes/index";
 
 const app: express.Application = express();
+
+// Add CORS middleware
+app.use(cors());
 
 app.use(httpLogger);
 app.use(express.json());
@@ -35,6 +40,12 @@ app.set("port", port);
 
 const server = http.createServer(app);
 
+// Set up Socket.IO
+const io = setupSocketIO(server);
+
+// You can export io if you need to use it elsewhere in your application
+export { io };
+
 function onError(error: { syscall: string; code: string }) {
   if (error.syscall !== "listen") {
     throw error;
@@ -43,9 +54,11 @@ function onError(error: { syscall: string; code: string }) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
+      console.error(`Port ${port} requires elevated privileges`);
       process.exit(1);
       break;
     case "EADDRINUSE":
+      console.error(`Port ${port} is already in use`);
       process.exit(1);
       break;
     default:
