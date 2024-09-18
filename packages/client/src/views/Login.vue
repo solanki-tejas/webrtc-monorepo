@@ -4,7 +4,8 @@
             <template #header>
                 <h2 class="card-header">Login</h2>
             </template>
-            <el-form :model="loginForm" :rules="rules" ref="loginFormRef" @submit.prevent="handleLogin" class="login-form">
+            <el-form :model="loginForm" :rules="rules" ref="loginFormRef" @submit.prevent="handleLogin"
+                class="login-form">
                 <el-form-item prop="email">
                     <el-input v-model="loginForm.email" placeholder="Email" type="email">
                         <template #prefix>
@@ -29,20 +30,27 @@
                 </el-form-item>
             </el-form>
             <div class="text-center">
-                <el-link type="primary" href="/signup">Don't have an account? Sign up</el-link>
+                <el-link type="primary" :onclick="() => router.push('/auth/signup')">Don't have an account? Sign
+                    up</el-link>
             </div>
         </el-card>
     </AuthLayout>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Message, Lock } from '@element-plus/icons-vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import http from '@/utils/http';
+import { useCommonStore } from '@/stores/commonStore';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const loginFormRef = ref()
 const loading = ref(false)
+const commonStore = useCommonStore();
 
 const loginForm = reactive({
     email: '',
@@ -67,11 +75,18 @@ const handleLogin = async () => {
         await loginFormRef.value.validate()
         loading.value = true
         // Implement your login logic here
-        console.log('Login form submitted:', loginForm)
-        ElMessage.success('Login successful!')
-    } catch (error) {
+
+        const response = await http.post<any>('/auth/login', loginForm);
+
+        if (response) {
+            commonStore.setToken("token")
+            commonStore.setUserInfo(response.data.data)
+            ElMessage.success(response.data.message)
+        }
+
+    } catch (error: any) {
         console.error('Login failed:', error)
-        ElMessage.error('Login failed. Please try again.')
+        ElMessage.error(error.response.data.message)
     } finally {
         loading.value = false
     }
@@ -81,34 +96,46 @@ const handleLogin = async () => {
 <style scoped>
 .login-card {
     width: 100%;
-    max-width: 500px; /* Increased the max-width */
-    padding: 2rem; /* Added padding */
-    border-radius: 8px; /* Added border-radius for rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added shadow for better appearance */
-    margin: 2rem auto; /* Centered the card with margin */
+    max-width: 500px;
+    /* Increased the max-width */
+    padding: 2rem;
+    /* Added padding */
+    border-radius: 8px;
+    /* Added border-radius for rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Added shadow for better appearance */
+    margin: 2rem auto;
+    /* Centered the card with margin */
 }
 
 .card-header {
-    font-size: 1.5rem; /* Increased font size for header */
-    margin-bottom: 1rem; /* Added bottom margin */
+    font-size: 1.5rem;
+    /* Increased font size for header */
+    margin-bottom: 1rem;
+    /* Added bottom margin */
 }
 
 .login-form {
-    padding: 1rem 0; /* Added padding to form */
+    padding: 1rem 0;
+    /* Added padding to form */
 }
 
 .el-form-item {
-    margin-bottom: 1rem; /* Added margin between form items */
+    margin-bottom: 1rem;
+    /* Added margin between form items */
 }
 
 .submit-btn {
     width: 100%;
-    padding: 0.75rem; /* Added padding to button */
-    font-size: 1rem; /* Increased font size for button */
+    padding: 0.75rem;
+    /* Added padding to button */
+    font-size: 1rem;
+    /* Increased font size for button */
 }
 
 .text-center {
     text-align: center;
-    margin-top: 1.5rem; /* Increased margin-top */
+    margin-top: 1.5rem;
+    /* Increased margin-top */
 }
 </style>

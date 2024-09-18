@@ -1,3 +1,4 @@
+import AudioCall from '@/views/AudioCall.vue'
 import Login from '@/views/Login.vue'
 import Signup from '@/views/Signup.vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/auth/signup',
       name: 'signup',
       component: Signup
+    },
+    {
+      path: '/audio',
+      name: 'audio',
+      component: AudioCall
     }
   ]
 })

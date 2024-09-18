@@ -5,8 +5,8 @@
                 <h2>Sign Up</h2>
             </template>
             <el-form :model="signupForm" :rules="rules" ref="signupFormRef" @submit.prevent="handleSignup">
-                <el-form-item prop="name">
-                    <el-input v-model="signupForm.name" placeholder="Full Name">
+                <el-form-item prop="fullName">
+                    <el-input v-model="signupForm.fullName" placeholder="Full Name">
                         <template #prefix>
                             <el-icon>
                                 <User />
@@ -48,7 +48,8 @@
                 </el-form-item>
             </el-form>
             <div class="text-center">
-                <el-link type="primary" href="/auth/login">Already have an account? Login</el-link>
+                <el-link type="primary" :onclick="() => router.push('/auth/login')">Already have an account?
+                    Login</el-link>
             </div>
         </el-card>
     </AuthLayout>
@@ -59,12 +60,16 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, Message, Lock } from '@element-plus/icons-vue'
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import http from '@/utils/http';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const signupFormRef = ref()
 const loading = ref(false)
 
 const signupForm = reactive({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -94,8 +99,8 @@ const validatePass2 = (rule: any, value: string, callback: any) => {
 }
 
 const rules = {
-    name: [
-        { required: true, message: 'Please input your name', trigger: 'blur' },
+    fullName: [
+        { required: true, message: 'Please input your fullName', trigger: 'blur' },
         { min: 2, message: 'Name must be at least 2 characters', trigger: 'blur' }
     ],
     email: [
@@ -118,11 +123,16 @@ const handleSignup = async () => {
         await signupFormRef.value.validate()
         loading.value = true
         // Implement your signup logic here
-        console.log('Signup form submitted:', signupForm)
-        ElMessage.success('Signup successful!')
-    } catch (error) {
+
+        const response = await http.post<any>('/auth/signup', signupForm);
+
+        if (response) {
+            ElMessage.success(response.data.message)
+        }
+
+    } catch (error: any) {
         console.error('Signup failed:', error)
-        ElMessage.error('Signup failed. Please try again.')
+        ElMessage.error(error.response.data.message)
     } finally {
         loading.value = false
     }
